@@ -36,7 +36,7 @@ from .utils import logging
 
 
 if is_datasets_available():
-    from datasets import load_dataset
+    from datasets import load_dataset, load_from_disk
 
 if is_faiss_available():
     import faiss
@@ -214,6 +214,7 @@ class HFIndex:
         vector_size: int,
         index_path: Optional[str] = None,
         use_dummy_dataset=False,
+        load_dataset_dir: Optional[str] = None,
     ):
         super().__init__()
         self.dataset_name = dataset_name
@@ -223,12 +224,19 @@ class HFIndex:
         self.index_path = index_path
         self.use_dummy_dataset = use_dummy_dataset
         self._index_initialize = False
+        self.load_dataset_dir = load_dataset_dir
 
         logger.info("Loading passages from {}".format(self.dataset_name))
-        self.dataset = load_dataset(
-            self.dataset_name, with_index=False, split=self.dataset_split, dummy=self.use_dummy_dataset
-        )
-        self.dataset.set_format("numpy", columns=["embeddings"], output_all_columns=True)
+        print("load from disk")
+        self.dataset = load_from_disk(self.load_dataset_dir)
+        # self.dataset = load_dataset(
+        #     self.dataset_name, 
+        #     with_index=False, 
+        #     split=self.dataset_split, 
+        #     cache_dir=self.cache_dir, 
+        #     dummy=self.use_dummy_dataset
+        # )
+        # self.dataset.set_format("numpy", columns=["embeddings"], output_all_columns=True)
 
     def is_initialized(self):
         return self._index_initialize
@@ -236,7 +244,7 @@ class HFIndex:
     def init_index(self):
         if self.index_path is not None:
             logger.info("Loading index from {}".format(self.index_path))
-            self.index.load_faiss_index(index_name=self.index_name, file=self.index_path)
+            self.dataset.load_faiss_index(index_name=self.index_name, file=self.index_path)
         else:
             logger.info("Loading index from {}".format(self.dataset_name + " with index name " + self.index_name))
             self.dataset = load_dataset(
@@ -297,6 +305,7 @@ class RagRetriever:
                 config.retrieval_vector_size,
                 config.index_path,
                 config.use_dummy_dataset,
+                '/hdd/rag/',
             )
         )
         self.generator_tokenizer = generator_tokenizer
