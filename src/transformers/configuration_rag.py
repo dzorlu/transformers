@@ -105,6 +105,7 @@ class RagConfig(PretrainedConfig):
         exclude_bos_score=False,
         do_marginalize=False,
         output_retrieved=False,
+        dataset_path=None,   
         **kwargs
     ):
         super().__init__(
@@ -153,6 +154,7 @@ class RagConfig(PretrainedConfig):
         self.output_retrieved = output_retrieved
 
         self.do_deduplication = do_deduplication
+        self.dataset_path = dataset_path
 
     @classmethod
     def from_question_encoder_generator_configs(

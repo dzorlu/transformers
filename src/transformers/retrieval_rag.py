@@ -214,7 +214,7 @@ class HFIndex:
         vector_size: int,
         index_path: Optional[str] = None,
         use_dummy_dataset=False,
-        load_dataset_dir: Optional[str] = None,
+        dataset_path: Optional[str] = None,
     ):
         super().__init__()
         self.dataset_name = dataset_name
@@ -224,11 +224,11 @@ class HFIndex:
         self.index_path = index_path
         self.use_dummy_dataset = use_dummy_dataset
         self._index_initialize = False
-        self.load_dataset_dir = load_dataset_dir
+        self.dataset_path = dataset_path
 
         logger.info("Loading passages from {}".format(self.dataset_name))
         print("load from disk")
-        self.dataset = load_from_disk(self.load_dataset_dir)
+        self.dataset = load_from_disk(self.dataset_path)
         # self.dataset = load_dataset(
         #     self.dataset_name, 
         #     with_index=False, 
@@ -305,7 +305,7 @@ class RagRetriever:
                 config.retrieval_vector_size,
                 config.index_path,
                 config.use_dummy_dataset,
-                '/hdd/rag/',
+                config.dataset_path,
             )
         )
         self.generator_tokenizer = generator_tokenizer
