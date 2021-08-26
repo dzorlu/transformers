@@ -714,23 +714,24 @@ class Wav2Vec2EncoderStableLayerNorm(nn.Module):
             if not skip_the_layer or deepspeed_zero3_is_enabled:
                 # under deepspeed zero3 all gpus must run in sync
                 # XXX: could optimize this like synced_gpus in generate_utils but not sure if it's worth the code complication
-                if getattr(self.config, "gradient_checkpointing", False) and self.training:
-                    # create gradient checkpointing function
-                    def create_custom_forward(module):
-                        def custom_forward(*inputs):
-                            return module(*inputs, output_attentions)
+                # if getattr(self.config, "gradient_checkpointing", False) and self.training:
+                #     # create gradient checkpointing function
+                #     def create_custom_forward(module):
+                #         def custom_forward(*inputs):
+                #             return module(*inputs, output_attentions)
 
-                        return custom_forward
+                #         return custom_forward
 
-                    layer_outputs = torch.utils.checkpoint.checkpoint(
-                        create_custom_forward(layer),
-                        hidden_states,
-                        attention_mask,
-                    )
-                else:
-                    layer_outputs = layer(
-                        hidden_states, attention_mask=attention_mask, output_attentions=output_attentions
-                    )
+                #     layer_outputs = torch.utils.checkpoint.checkpoint(
+                #         create_custom_forward(layer),
+                #         hidden_states,
+                #         attention_mask,
+                #     )
+                #     pass
+                # else:
+                layer_outputs = layer(
+                    hidden_states, attention_mask=attention_mask, output_attentions=output_attentions
+                )
                 hidden_states = layer_outputs[0]
 
             if skip_the_layer:
