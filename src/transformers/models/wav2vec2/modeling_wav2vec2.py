@@ -1489,36 +1489,36 @@ class Wav2Vec2ForCTC(Wav2Vec2PreTrainedModel):
         logits = self.lm_head(hidden_states)
 
         loss = None
-        if labels is not None:
+        # if labels is not None:
 
-            if labels.max() >= self.config.vocab_size:
-                raise ValueError(f"Label values must be <= vocab_size: {self.config.vocab_size}")
+        #     if labels.max() >= self.config.vocab_size:
+        #         raise ValueError(f"Label values must be <= vocab_size: {self.config.vocab_size}")
 
-            # retrieve loss input_lengths from attention_mask
-            attention_mask = (
-                attention_mask if attention_mask is not None else torch.ones_like(input_values, dtype=torch.long)
-            )
-            input_lengths = self._get_feat_extract_output_lengths(attention_mask.sum(-1)).to(torch.long)
+        #     # retrieve loss input_lengths from attention_mask
+        #     attention_mask = (
+        #         attention_mask if attention_mask is not None else torch.ones_like(input_values, dtype=torch.long)
+        #     )
+        #     input_lengths = self._get_feat_extract_output_lengths(attention_mask.sum(-1)).to(torch.long)
 
-            # assuming that padded tokens are filled with -100
-            # when not being attended to
-            labels_mask = labels >= 0
-            target_lengths = labels_mask.sum(-1)
-            flattened_targets = labels.masked_select(labels_mask)
+        #     # assuming that padded tokens are filled with -100
+        #     # when not being attended to
+        #     labels_mask = labels >= 0
+        #     target_lengths = labels_mask.sum(-1)
+        #     flattened_targets = labels.masked_select(labels_mask)
 
-            # ctc_loss doesn't support fp16
-            log_probs = nn.functional.log_softmax(logits, dim=-1, dtype=torch.float32).transpose(0, 1)
+        #     # ctc_loss doesn't support fp16
+        #     log_probs = nn.functional.log_softmax(logits, dim=-1, dtype=torch.float32).transpose(0, 1)
 
-            with torch.backends.cudnn.flags(enabled=False):
-                loss = nn.functional.ctc_loss(
-                    log_probs,
-                    flattened_targets,
-                    input_lengths,
-                    target_lengths,
-                    blank=self.config.pad_token_id,
-                    reduction=self.config.ctc_loss_reduction,
-                    zero_infinity=self.config.ctc_zero_infinity,
-                )
+        #     with torch.backends.cudnn.flags(enabled=False):
+        #         loss = nn.functional.ctc_loss(
+        #             log_probs,
+        #             flattened_targets,
+        #             input_lengths,
+        #             target_lengths,
+        #             blank=self.config.pad_token_id,
+        #             reduction=self.config.ctc_loss_reduction,
+        #             zero_infinity=self.config.ctc_zero_infinity,
+        #         )
 
         if not return_dict:
             output = (logits,) + outputs[2:]
